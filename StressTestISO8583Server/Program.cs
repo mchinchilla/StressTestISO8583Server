@@ -86,17 +86,10 @@ namespace StressTestISO8583Server
                 mf.SetConfigPath(@"Resources/config.xml");
 
                 Console.Clear();
-                Console.WriteLine($"{String.Empty.PadRight(70, '*')}");
-                Console.WriteLine($@"
-            ████████╗███████╗██╗  ██╗██╗██╗   ██╗███╗   ███╗
-            ╚══██╔══╝██╔════╝██║ ██╔╝██║██║   ██║████╗ ████║
-               ██║   █████╗  █████╔╝ ██║██║   ██║██╔████╔██║
-               ██║   ██╔══╝  ██╔═██╗ ██║██║   ██║██║╚██╔╝██║
-               ██║   ███████╗██║  ██╗██║╚██████╔╝██║ ╚═╝ ██║
-               ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═╝
-                https://www.tekium.net
-");
-                Console.WriteLine($"{String.Empty.PadRight(70, '*')}");
+
+                Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
+                Console.WriteLine($"Server Address: {cliOptions.serverAddress}, Port: {cliOptions.serverPort}\nVerbose: {cliOptions.Verbose}, Use TLS: {cliOptions.UseTLS}\nQuantity: {cliOptions.Quantity}, Batch: {cliOptions.Batch}, Total Messages to Send: {cliOptions.Quantity* cliOptions.Batch}");
+                Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
 
                 // Create an ISO Message
                 var iso = mf.NewMessage(0x200);

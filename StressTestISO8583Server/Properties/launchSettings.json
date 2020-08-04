@@ -2,7 +2,7 @@
   "profiles": {
     "StressTestISO8583Server": {
       "commandName": "Project",
-      "commandLineArgs": "-s tekiumlabs.com -p 5000 -q 100 -b 10"
+      "commandLineArgs": "-s tekiumlabs.com -p 5000 -q 45 -b 10"
     }
   }
 }
