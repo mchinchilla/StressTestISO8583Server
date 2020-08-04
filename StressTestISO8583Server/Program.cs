@@ -54,7 +54,7 @@ namespace StressTestISO8583Server
             {
                 Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(opts =>
                 {
-                    Console.WriteLine($@"Example: StressTestISO8583Server -s tekiumlabs.com -p 5005 -q 1000 -b 10 -t false -v");
+                    Console.WriteLine($@"Example: StressTestISO8583Server -s tekiumlabs.com -p 5005 -q 1000 -b 10 -t -v");
                     cliOptions = opts;
 
                 }).WithNotParsed(errs =>
@@ -110,16 +110,21 @@ namespace StressTestISO8583Server
                     BackgroundColor = ConsoleColor.DarkGray,
                     BackgroundCharacter = '\u2593',
                     ProgressBarOnBottom = true,
-                    DisplayTimeInRealTime = true,
+                    DisplayTimeInRealTime = false,
                     CollapseWhenFinished = true
                 };
 
                 sw.Start();
                 successMessages = 0;
                 failedMessages = 0;
+                int k = 0;
 
-                //pbar = new ProgressBar(cliOptions.Quantity, $@"Proccessing Messages...", opts);
-                //pbar.Tick(0, $" [Proccessing Messages.... ]");
+                if (!cliOptions.Verbose)
+                {
+                    pbar = new ProgressBar((cliOptions.Quantity * cliOptions.Batch), $@"Proccessing Messages...", opts);
+                    pbar.Tick(0, $" [Proccessing Messages.... ]");
+                }
+
                 
                 for (int i = 0; i < cliOptions.Quantity; i++)
                 {
@@ -132,7 +137,7 @@ namespace StressTestISO8583Server
                             result = Parallel.For(1, (cliOptions.Batch + 1), po, async (int x, ParallelLoopState state) =>
                               {
                                   int? TaskId = Task.CurrentId.Value;
-
+                                  k++;
                                   try
                                   {
                                       //Console.WriteLine($"Task: {x} --> Task Id:{Task.CurrentId}");
@@ -155,7 +160,11 @@ namespace StressTestISO8583Server
                                       {
                                           cts.Cancel();
                                       }
-
+                                      
+                                      if(!cliOptions.Verbose)
+                                      {
+                                          pbar.Tick(k, $" [Proccessing Message: {k} ]");
+                                      }
                                   }
                                   catch (Exception)
                                   {
@@ -166,8 +175,6 @@ namespace StressTestISO8583Server
                                   if (cliOptions.Verbose)
                                     Console.WriteLine($"Task: {x}-> Task Id:{TaskId}.....[{success}]");
                               });
-
-                            //pbar.Tick(i, $" [Proccessing Message: {i} ]");
 
                             token.ThrowIfCancellationRequested();
 
@@ -186,7 +193,13 @@ namespace StressTestISO8583Server
 
                 sw.Stop();
 
-                Console.WriteLine();
+                if (!cliOptions.Verbose)
+                {
+                    pbar.Tick(pbar.MaxTicks);
+                    pbar.WriteLine("Tasks Completed!!!");
+                    pbar.Dispose();
+                }
+
                 Console.WriteLine($"===========================================================================================");
                 Console.WriteLine($"Success Messages: {successMessages} and Failed Messages: {failedMessages} in {sw.Elapsed}");
                 Console.WriteLine($"===========================================================================================");
