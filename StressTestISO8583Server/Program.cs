@@ -39,17 +39,6 @@ namespace StressTestISO8583Server
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            Console.WriteLine($"{String.Empty.PadRight(80, '*')}");
-            Console.WriteLine($@"
-        ████████╗███████╗██╗  ██╗██╗██╗   ██╗███╗   ███╗
-        ╚══██╔══╝██╔════╝██║ ██╔╝██║██║   ██║████╗ ████║
-           ██║   █████╗  █████╔╝ ██║██║   ██║██╔████╔██║
-           ██║   ██╔══╝  ██╔═██╗ ██║██║   ██║██║╚██╔╝██║
-           ██║   ███████╗██║  ██╗██║╚██████╔╝██║ ╚═╝ ██║
-           ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═╝
-");
-            Console.WriteLine($"{String.Empty.PadRight(80, '*')}");
-
             try
             {
                 Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(opts =>
@@ -95,6 +84,19 @@ namespace StressTestISO8583Server
                     Encoding = Encoding.UTF8
                 };
                 mf.SetConfigPath(@"Resources/config.xml");
+
+                Console.Clear();
+                Console.WriteLine($"{String.Empty.PadRight(70, '*')}");
+                Console.WriteLine($@"
+            ████████╗███████╗██╗  ██╗██╗██╗   ██╗███╗   ███╗
+            ╚══██╔══╝██╔════╝██║ ██╔╝██║██║   ██║████╗ ████║
+               ██║   █████╗  █████╔╝ ██║██║   ██║██╔████╔██║
+               ██║   ██╔══╝  ██╔═██╗ ██║██║   ██║██║╚██╔╝██║
+               ██║   ███████╗██║  ██╗██║╚██████╔╝██║ ╚═╝ ██║
+               ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═╝
+                https://www.tekium.net
+");
+                Console.WriteLine($"{String.Empty.PadRight(70, '*')}");
 
                 // Create an ISO Message
                 var iso = mf.NewMessage(0x200);
@@ -200,9 +202,9 @@ namespace StressTestISO8583Server
                     pbar.Dispose();
                 }
 
-                Console.WriteLine($"===========================================================================================");
+                Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
                 Console.WriteLine($"Success Messages: {successMessages} and Failed Messages: {failedMessages} in {sw.Elapsed}");
-                Console.WriteLine($"===========================================================================================");
+                Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
                 Console.WriteLine($"Press any key to continue...");
                 Console.ReadKey();
 
