@@ -31,15 +31,15 @@ If the option -v or --verbose is set the progress bar won't be appear.
 Example: dotnet StressTestISO8583Server.dll -s tekiumlabs.com -p 5005 -q 1000 -b 10 -t -v
 ```
 
-===================================================================================
+=========================================================================
 ### NOTICE: The total quantity to send will be the multiply of quantity and batch.
-===================================================================================
+=========================================================================
 
 ### Output samples
 
-![example with ProgressBar]((https://github.com/mchinchilla/StressTestISO8583Server/tree/master/StressTestISO8583Server/Resources/OutputSamplePrgBar.gif)
+![example with ProgressBar](https://github.com/mchinchilla/StressTestISO8583Server/tree/master/StressTestISO8583Server/Resources/OutputSamplePrgBar.gif)
 
-![example with verbose option]((https://github.com/mchinchilla/StressTestISO8583Server/tree/master/StressTestISO8583Server/Resources/OutputSampleNoPrgBar.gif)
+![example with verbose option](https://github.com/mchinchilla/StressTestISO8583Server/tree/master/StressTestISO8583Server/Resources/OutputSampleNoPrgBar.gif)
 
 
 
