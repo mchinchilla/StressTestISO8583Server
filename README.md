@@ -37,9 +37,9 @@ Example: dotnet StressTestISO8583Server.dll -s tekiumlabs.com -p 5005 -q 1000 -b
 
 ### Output samples
 
-![example with ProgressBar](https://github.com/mchinchilla/StressTestISO8583Server/blob/master/Resources/prgbar.gif)
+![example with ProgressBar](https://github.com/mchinchilla/StressTestISO8583Server/blob/master/StressTestISO8583Server/Resources/prgbar.gif)
 
-![example with verbose option](https://github.com/mchinchilla/StressTestISO8583Server/blob/master/StressTestISO8583Server/Resources/prgbar.gif)
+![example with verbose option](https://github.com/mchinchilla/StressTestISO8583Server/blob/master/StressTestISO8583Server/Resources/no-prgbar.gif)
 
 
 
