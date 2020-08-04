@@ -39,6 +39,17 @@ namespace StressTestISO8583Server
         /// <param name="args"></param>
         static void Main(string[] args)
         {
+            Console.WriteLine($"{String.Empty.PadRight(80, '*')}");
+            Console.WriteLine($@"
+        ████████╗███████╗██╗  ██╗██╗██╗   ██╗███╗   ███╗
+        ╚══██╔══╝██╔════╝██║ ██╔╝██║██║   ██║████╗ ████║
+           ██║   █████╗  █████╔╝ ██║██║   ██║██╔████╔██║
+           ██║   ██╔══╝  ██╔═██╗ ██║██║   ██║██║╚██╔╝██║
+           ██║   ███████╗██║  ██╗██║╚██████╔╝██║ ╚═╝ ██║
+           ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═╝
+");
+            Console.WriteLine($"{String.Empty.PadRight(80, '*')}");
+
             try
             {
                 Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(opts =>
@@ -107,8 +118,8 @@ namespace StressTestISO8583Server
                 successMessages = 0;
                 failedMessages = 0;
 
-                pbar = new ProgressBar(cliOptions.Quantity, $@"Proccessing Messages...", opts);
-                pbar.Tick(0, $" [Proccessing Messages.... ]");
+                //pbar = new ProgressBar(cliOptions.Quantity, $@"Proccessing Messages...", opts);
+                //pbar.Tick(0, $" [Proccessing Messages.... ]");
                 
                 for (int i = 0; i < cliOptions.Quantity; i++)
                 {
@@ -125,7 +136,7 @@ namespace StressTestISO8583Server
                                   try
                                   {
                                       //Console.WriteLine($"Task: {x} --> Task Id:{Task.CurrentId}");
-                                      string response = await SendISOMessage("tekiumlabs.com", 5005, msg);
+                                      string response = await SendISOMessage(cliOptions.serverAddress, cliOptions.serverPort, msg);
 
                                       if (!String.IsNullOrEmpty(response))
                                       {
@@ -152,10 +163,11 @@ namespace StressTestISO8583Server
                                       failedMessages++;
                                   }
                                   
-                                  //Console.WriteLine($"Task: {x}-> Task Id:{TaskId}.....[{success}]");
+                                  if (cliOptions.Verbose)
+                                    Console.WriteLine($"Task: {x}-> Task Id:{TaskId}.....[{success}]");
                               });
 
-                            pbar.Tick(i, $" [Proccessing Message: {i} ]");
+                            //pbar.Tick(i, $" [Proccessing Message: {i} ]");
 
                             token.ThrowIfCancellationRequested();
 
@@ -174,6 +186,7 @@ namespace StressTestISO8583Server
 
                 sw.Stop();
 
+                Console.WriteLine();
                 Console.WriteLine($"===========================================================================================");
                 Console.WriteLine($"Success Messages: {successMessages} and Failed Messages: {failedMessages} in {sw.Elapsed}");
                 Console.WriteLine($"===========================================================================================");
