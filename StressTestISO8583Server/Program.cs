@@ -78,18 +78,18 @@ namespace StressTestISO8583Server
                 ParallelOptions po = new ParallelOptions();
                 po.CancellationToken = token;
 
+                Console.Clear();
+
+                Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
+                Console.WriteLine($"Server Address: {cliOptions.serverAddress}, Port: {cliOptions.serverPort}\nVerbose: {cliOptions.Verbose}, Use TLS: {cliOptions.UseTLS}\nQuantity: {cliOptions.Quantity}, Batch: {cliOptions.Batch}, Total Messages to Send: {cliOptions.Quantity * cliOptions.Batch}");
+                Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
+
                 // Load the MessageFactory from Config
                 mf = new MessageFactory<IsoMessage>
                 {
                     Encoding = Encoding.UTF8
                 };
                 mf.SetConfigPath(@"Resources/config.xml");
-
-                Console.Clear();
-
-                Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
-                Console.WriteLine($"Server Address: {cliOptions.serverAddress}, Port: {cliOptions.serverPort}\nVerbose: {cliOptions.Verbose}, Use TLS: {cliOptions.UseTLS}\nQuantity: {cliOptions.Quantity}, Batch: {cliOptions.Batch}, Total Messages to Send: {cliOptions.Quantity* cliOptions.Batch}");
-                Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
 
                 // Create an ISO Message
                 var iso = mf.NewMessage(0x200);
@@ -136,7 +136,7 @@ namespace StressTestISO8583Server
                                   try
                                   {
                                       //Console.WriteLine($"Task: {x} --> Task Id:{Task.CurrentId}");
-                                      string response = await SendISOMessage(cliOptions.serverAddress, cliOptions.serverPort, msg);
+                                      string response = await SendISOMessageAsync(cliOptions.serverAddress, cliOptions.serverPort, msg);
 
                                       if (!String.IsNullOrEmpty(response))
                                       {
@@ -215,7 +215,14 @@ namespace StressTestISO8583Server
             }
         }
 
-        private static async Task<string> SendISOMessage(string serverAddress, int remotePort, byte[] isoMessage)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="serverAddress"></param>
+        /// <param name="remotePort"></param>
+        /// <param name="isoMessage"></param>
+        /// <returns></returns>
+        private static async Task<string> SendISOMessageAsync(string serverAddress, int remotePort, byte[] isoMessage)
         {
             string returndata = string.Empty;
             try
@@ -258,6 +265,14 @@ namespace StressTestISO8583Server
             return await Task.Run(() => returndata);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="certificate"></param>
+        /// <param name="chain"></param>
+        /// <param name="sslPolicyErrors"></param>
+        /// <returns></returns>
         public static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             return true;
