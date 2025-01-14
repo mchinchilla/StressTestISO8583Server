@@ -20,18 +20,18 @@ namespace StressTestISO8583Server
 {
     class Program
     {
-        private static ParallelLoopResult result;
-        private static CancellationTokenSource cts = new CancellationTokenSource();
+        private static ParallelLoopResult _result;
+        private static CancellationTokenSource _cts = new CancellationTokenSource();
 
-        private static MessageFactory<IsoMessage> mf;
-        private static Stopwatch sw = new Stopwatch();
-        private static int successMessages = 0;
-        private static int failedMessages = 0;
-        private static string success = "FAILED";
+        private static MessageFactory<IsoMessage> _mf;
+        private static Stopwatch _sw = new Stopwatch();
+        private static int _successMessages = 0;
+        private static int _failedMessages = 0;
+        private static string _success = "FAILED";
 
-        private static Options cliOptions = new Options();
-        private static bool cliOptionsHasErrors = false;
-        private static ProgressBar pbar = null;
+        private static Options _cliOptions = new Options();
+        private static bool _cliOptionsHasErrors = false;
+        private static ProgressBar _pbar = null;
 
         /// <summary>
         /// 
@@ -44,22 +44,22 @@ namespace StressTestISO8583Server
                 Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(opts =>
                 {
                     Console.WriteLine($@"Example: StressTestISO8583Server -s tekiumlabs.com -p 5005 -q 1000 -b 10 -t -v");
-                    cliOptions = opts;
+                    _cliOptions = opts;
 
                 }).WithNotParsed(errs =>
                 {
 
                     if (errs.ToList().Count > 0)
                     {
-                        cliOptionsHasErrors = true;
+                        _cliOptionsHasErrors = true;
                     }
                     else
                     {
-                        cliOptionsHasErrors = false;
+                        _cliOptionsHasErrors = false;
                     }
                 });
 
-                if (cliOptionsHasErrors)
+                if (_cliOptionsHasErrors)
                 {
                     return;
                 }
@@ -74,30 +74,30 @@ namespace StressTestISO8583Server
             {
                 List<Task> tasks = new List<Task>();
                 Mutex mutex = new Mutex();
-                var token = cts.Token;
+                var token = _cts.Token;
                 ParallelOptions po = new ParallelOptions();
                 po.CancellationToken = token;
 
                 Console.Clear();
 
                 Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
-                Console.WriteLine($"Server Address: {cliOptions.serverAddress}, Port: {cliOptions.serverPort}\nVerbose: {cliOptions.Verbose}, Use TLS: {cliOptions.UseTLS}\nQuantity: {cliOptions.Quantity}, Batch: {cliOptions.Batch}, Total Messages to Send: {cliOptions.Quantity * cliOptions.Batch}");
+                Console.WriteLine($"Server Address: {_cliOptions.serverAddress}, Port: {_cliOptions.serverPort}\nVerbose: {_cliOptions.Verbose}, Use TLS: {_cliOptions.UseTLS}\nQuantity: {_cliOptions.Quantity}, Batch: {_cliOptions.Batch}, Total Messages to Send: {_cliOptions.Quantity * _cliOptions.Batch}");
                 Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
 
                 // Load the MessageFactory from Config
-                mf = new MessageFactory<IsoMessage>
+                _mf = new MessageFactory<IsoMessage>
                 {
                     Encoding = Encoding.UTF8
                 };
-                mf.SetConfigPath(@"Resources/config.xml");
+                _mf.SetConfigPath(@"Resources/config.xml");
 
                 // Create an ISO Message
-                var iso = mf.NewMessage(0x200);
+                var iso = _mf.NewMessage(0x200);
                 sbyte[] streamToSend = iso.WriteData();
                 byte[] msg = Encoding.ASCII.GetBytes(streamToSend.ToString(Encoding.ASCII).Replace("ISO0150000500200", "0200"));
 
 
-                int totalTicks = cliOptions.Quantity;
+                int totalTicks = _cliOptions.Quantity;
                 var opts = new ProgressBarOptions
                 {
                     ForegroundColor = ConsoleColor.Yellow,
@@ -109,19 +109,19 @@ namespace StressTestISO8583Server
                     CollapseWhenFinished = true
                 };
 
-                sw.Start();
-                successMessages = 0;
-                failedMessages = 0;
+                _sw.Start();
+                _successMessages = 0;
+                _failedMessages = 0;
                 int k = 0;
 
-                if (!cliOptions.Verbose)
+                if (!_cliOptions.Verbose)
                 {
-                    pbar = new ProgressBar((cliOptions.Quantity * cliOptions.Batch), $@"Proccessing Messages...", opts);
-                    pbar.Tick(0, $" [Proccessing Messages.... ]");
+                    _pbar = new ProgressBar((_cliOptions.Quantity * _cliOptions.Batch), $@"Proccessing Messages...", opts);
+                    _pbar.Tick(0, $" [Proccessing Messages.... ]");
                 }
 
                 
-                for (int i = 0; i < cliOptions.Quantity; i++)
+                for (int i = 0; i < _cliOptions.Quantity; i++)
                 {
                     bool haveLock = mutex.WaitOne();
                     try
@@ -129,46 +129,46 @@ namespace StressTestISO8583Server
                         tasks.Add(Task.Factory.StartNew(() =>
                         {
                             // (cliOptions.Batch + 1): +1 because is not inclusive [0,11[ => 10 messages
-                            result = Parallel.For(1, (cliOptions.Batch + 1), po, async (int x, ParallelLoopState state) =>
+                            _result = Parallel.For(1, (_cliOptions.Batch + 1), po, async (int x, ParallelLoopState state) =>
                               {
                                   int? TaskId = Task.CurrentId.Value;
                                   k++;
                                   try
                                   {
                                       //Console.WriteLine($"Task: {x} --> Task Id:{Task.CurrentId}");
-                                      string response = await SendISOMessageAsync(cliOptions.serverAddress, cliOptions.serverPort, msg);
+                                      string response = await SendISOMessageAsync(_cliOptions.serverAddress, _cliOptions.serverPort, msg);
 
                                       if (!String.IsNullOrEmpty(response))
                                       {
                                           //Console.Write($"Yay!!! Transaction success!\n");
-                                          successMessages++;
-                                          success = "OK";
+                                          _successMessages++;
+                                          _success = "OK";
                                       }
                                       else
                                       {
                                           //Console.WriteLine($"Opps!, :( No luck this time!\n");
-                                          failedMessages++;
-                                          success = "FAILED";
+                                          _failedMessages++;
+                                          _success = "FAILED";
                                       }
 
-                                      if (cts.IsCancellationRequested)
+                                      if (_cts.IsCancellationRequested)
                                       {
-                                          cts.Cancel();
+                                          _cts.Cancel();
                                       }
                                       
-                                      if(!cliOptions.Verbose)
+                                      if(!_cliOptions.Verbose)
                                       {
-                                          pbar.Tick(k, $" [Proccessing Message: {k} ]");
+                                          _pbar.Tick(k, $" [Proccessing Message: {k} ]");
                                       }
                                   }
                                   catch (Exception)
                                   {
                                       Console.WriteLine($"Error on Task: {x}-> Task Id:{TaskId}");
-                                      failedMessages++;
+                                      _failedMessages++;
                                   }
                                   
-                                  if (cliOptions.Verbose)
-                                    Console.WriteLine($"Task: {x}-> Task Id:{TaskId}.....[{success}]");
+                                  if (_cliOptions.Verbose)
+                                    Console.WriteLine($"Task: {x}-> Task Id:{TaskId}.....[{_success}]");
                               });
 
                             token.ThrowIfCancellationRequested();
@@ -184,19 +184,19 @@ namespace StressTestISO8583Server
 
                 Task.WaitAll(tasks.ToArray());
 
-                cts.Cancel();
+                _cts.Cancel();
 
-                sw.Stop();
+                _sw.Stop();
 
-                if (!cliOptions.Verbose)
+                if (!_cliOptions.Verbose)
                 {
-                    pbar.Tick(pbar.MaxTicks);
-                    pbar.WriteLine("Tasks Completed!!!");
-                    pbar.Dispose();
+                    _pbar.Tick(_pbar.MaxTicks);
+                    _pbar.WriteLine("Tasks Completed!!!");
+                    _pbar.Dispose();
                 }
 
                 Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
-                Console.WriteLine($"Success Messages: {successMessages} and Failed Messages: {failedMessages} in {sw.Elapsed}");
+                Console.WriteLine($"Success Messages: {_successMessages} and Failed Messages: {_failedMessages} in {_sw.Elapsed}");
                 Console.WriteLine($"{String.Empty.PadRight(70, '=')}");
                 Console.WriteLine($"Press any key to continue...");
                 Console.ReadKey();
@@ -228,7 +228,7 @@ namespace StressTestISO8583Server
             try
             {
                 TcpClient clientSocket = new TcpClient();
-                if (cliOptions.UseTLS)
+                if (_cliOptions.UseTLS)
                 {
                     ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
                     clientSocket.Connect(serverAddress, remotePort);
