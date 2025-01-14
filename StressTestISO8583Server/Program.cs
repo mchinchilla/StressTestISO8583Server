@@ -94,7 +94,7 @@ namespace StressTestISO8583Server
                 // Create an ISO Message
                 var iso = mf.NewMessage(0x200);
                 sbyte[] streamToSend = iso.WriteData();
-                byte[] msg = Encoding.ASCII.GetBytes(streamToSend.BytesToString(Encoding.ASCII).Replace("ISO0150000500200", "0200"));
+                byte[] msg = Encoding.ASCII.GetBytes(streamToSend.ToString(Encoding.ASCII).Replace("ISO0150000500200", "0200"));
 
 
                 int totalTicks = cliOptions.Quantity;
