@@ -1,43 +1,36 @@
-﻿using CommandLine;
-using CommandLine.Text;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel;
+using Spectre.Console.Cli;
 
-namespace StressTestISO8583Server
+namespace StressTestISO8583Server;
+
+public sealed class StressTestSettings : CommandSettings
 {
+    [CommandOption("-v|--verbose")]
+    [Description("Set output to verbose messages")]
+    [DefaultValue(false)]
+    public bool Verbose { get; set; }
 
-    class Options
-    {
-        [Option('v', "verbose", Required = false, HelpText = "Set output to verbose messages.")]
-        public bool Verbose { get; set; }
+    [CommandArgument(0, "<server>")]
+    [Description("IP address or FQDN of the target server")]
+    public string ServerAddress { get; set; } = string.Empty;
 
-        [Option('s', "server", Required = true, HelpText = "This can be Ip Address or FQDN")]
-        public string serverAddress { get; set; }
+    [CommandOption("-p|--port")]
+    [Description("Server port (default 5005)")]
+    [DefaultValue(5005)]
+    public int ServerPort { get; set; } = 5005;
 
-        [Option('p', "port", Default = 5005, Required = false, HelpText = "Server port (Default port 5005)")]
-        public int serverPort { get; set; }
+    [CommandOption("-t|--usetls")]
+    [Description("Use TLS/SSL transport")]
+    [DefaultValue(false)]
+    public bool UseTLS { get; set; }
 
-        [Option('t', "usetls", Default = false, Required = false, HelpText = "The transport is TLS or not")]
-        public bool UseTLS { get; set; }
+    [CommandOption("-b|--batch")]
+    [Description("Number of concurrent messages per batch")]
+    [DefaultValue(10)]
+    public int Batch { get; set; } = 10;
 
-        [Option('b', "batch", Default = 10, Required = false, HelpText = "The messages parallel batch that will be send to the server")]
-        public int Batch { get; set; }
-
-        [Option('q', "quantity", Default = 100, Required = false, HelpText = "The total messages that will be send to the server")]
-        public int Quantity { get; set; }
-
-        [Usage(ApplicationAlias = "StressTestISO8583Server")]
-        public static IEnumerable<Example> Examples
-        {
-            get
-            {
-                return new List<Example>()
-                {
-                    new Example("ISO 8583 Server Stress Test", new Options {serverAddress = "127.0.0.1"})
-                };
-            }
-
-        }
-    }
+    [CommandOption("-q|--quantity")]
+    [Description("Total number of batches to send")]
+    [DefaultValue(100)]
+    public int Quantity { get; set; } = 100;
 }
