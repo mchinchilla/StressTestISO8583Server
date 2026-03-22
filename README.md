@@ -33,6 +33,7 @@ Validate the **throughput**, **stability**, and **resilience** of ISO 8583 serve
 | 📝 **Verbose Mode** | Per-message result logging for debugging |
 | ♻️ **Memory Efficient** | `ArrayPool<byte>` buffer recycling instead of per-message allocations |
 | 🛑 **Graceful Cancellation** | `Ctrl+C` propagates cancellation through all layers |
+| 🩺 **Pre-flight Connectivity Check** | Validates server reachability before launching the stress test |
 
 ## 🏗️ Architecture
 
@@ -136,12 +137,21 @@ dotnet run -- -s 192.168.1.50 -p 8080 -q 50 -b 100
             │               STRESS TEST EXECUTION FLOW             │
             └──────────────────────────────────────────────────────┘
 
- ┌─────────┐    ┌────────────────────┐    ┌─────────────────────┐
- │  Parse   │───▶│  Build ISO 8583   │───▶│  Display Config     │
- │  CLI     │    │  Message (0x200)   │    │  Table              │
- └─────────┘    └────────────────────┘    └────────┬────────────┘
-                                                   │
-                                                   ▼
+ ┌─────────┐    ┌─────────────────────┐    ┌────────────────────┐
+ │  Parse   │───▶│  Display Config    │───▶│  Connectivity      │
+ │  CLI     │    │  Table             │    │  Check (5s timeout)│
+ └─────────┘    └─────────────────────┘    └────────┬───────────┘
+                                                    │
+                                              ┌─────┴─────┐
+                                              │           │
+                                           ✅ OK      ❌ Fail
+                                              │        (exit 1)
+                                              ▼
+                           ┌────────────────────────────────────┐
+                           │     Build ISO 8583 Message (0x200) │
+                           └──────────────┬─────────────────────┘
+                                          │
+                                          ▼
                            ┌───────────────────────────────────┐
                            │     Channel<T> Producer           │
                            │  Enqueue (batch, msg) pairs       │
@@ -169,6 +179,16 @@ dotnet run -- -s 192.168.1.50 -p 8080 -q 50 -b 100
                     │  ✅ Success  ❌ Failed  ⏱ Time │
                     └───────────────────────────────┘
 ```
+
+### Pre-flight Connectivity Check
+
+Before launching any messages, the tool performs a TCP connectivity check against the target server with a **5-second timeout**:
+
+- **Success** → Proceeds with the stress test
+- **Timeout** → `"Connection timed out — did not respond within 5 seconds"` and exits
+- **Socket error** → `"Connection failed — <reason>"` and exits
+
+This prevents wasting time and resources sending thousands of messages to an unreachable server.
 
 ### Concurrency Model
 
