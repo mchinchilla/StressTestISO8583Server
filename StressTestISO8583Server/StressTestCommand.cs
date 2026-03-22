@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NetCore8583;
-using NetCore8583.Util;
+using NetCore8583.Extensions;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -12,7 +12,7 @@ namespace StressTestISO8583Server;
 
 public sealed class StressTestCommand : AsyncCommand<StressTestSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, StressTestSettings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, StressTestSettings settings, CancellationToken cancellationToken)
     {
         try
         {
@@ -23,22 +23,12 @@ public sealed class StressTestCommand : AsyncCommand<StressTestSettings>
             using var sender = new IsoMessageSender(settings.ServerAddress, settings.ServerPort, settings.UseTLS);
             var runner = new StressTestRunner(sender, msg, settings.Quantity, settings.Batch);
 
-            using var cts = new CancellationTokenSource();
-
-            // Handle Ctrl+C gracefully
-            Console.CancelKeyPress += (_, e) =>
-            {
-                e.Cancel = true;
-                cts.Cancel();
-                AnsiConsole.MarkupLine("\n[yellow]Cancellation requested...[/]");
-            };
-
             var sw = Stopwatch.StartNew();
 
             if (settings.Verbose)
-                await RunVerboseAsync(runner, cts.Token);
+                await RunVerboseAsync(runner, cancellationToken);
             else
-                await RunWithProgressAsync(runner, cts.Token);
+                await RunWithProgressAsync(runner, cancellationToken);
 
             sw.Stop();
 
