@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,9 @@ public sealed class StressTestCommand : AsyncCommand<StressTestSettings>
         try
         {
             DisplayConfiguration(settings);
+
+            if (!await CheckConnectivityAsync(settings.ServerAddress, settings.ServerPort, cancellationToken))
+                return 1;
 
             byte[] msg = BuildIsoMessage();
 
@@ -109,6 +113,36 @@ public sealed class StressTestCommand : AsyncCommand<StressTestSettings>
             string status = result.Success ? "[green]OK[/]" : "[red]FAILED[/]";
             AnsiConsole.MarkupLine($"Batch: {result.BatchIndex + 1} | Message: {result.MessageIndex + 1}.....{status}");
         }, cancellationToken);
+    }
+
+    private static async Task<bool> CheckConnectivityAsync(string serverAddress, int port, CancellationToken cancellationToken)
+    {
+        return await AnsiConsole.Status()
+            .Spinner(Spinner.Known.Dots)
+            .SpinnerStyle(Style.Parse("yellow"))
+            .StartAsync($"Checking connectivity to {serverAddress}:{port}...", async _ =>
+            {
+                try
+                {
+                    using var client = new TcpClient();
+                    using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    timeoutCts.CancelAfter(TimeSpan.FromSeconds(5));
+
+                    await client.ConnectAsync(serverAddress, port, timeoutCts.Token);
+                    AnsiConsole.MarkupLine($"[green]Connection OK[/] — {serverAddress}:{port} is reachable.");
+                    return true;
+                }
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                {
+                    AnsiConsole.MarkupLine($"[red]Connection timed out[/] — {serverAddress}:{port} did not respond within 5 seconds.");
+                    return false;
+                }
+                catch (SocketException ex)
+                {
+                    AnsiConsole.MarkupLine($"[red]Connection failed[/] — {serverAddress}:{port}: {ex.Message}");
+                    return false;
+                }
+            });
     }
 
     private static void DisplayResults(int success, int failed, TimeSpan elapsed)

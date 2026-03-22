@@ -95,21 +95,19 @@ dotnet build
 
 ```bash
 cd StressTestISO8583Server
-dotnet run -- <server> [OPTIONS]
+dotnet run -- -s <server> [OPTIONS]
 ```
 
 ## 📖 Usage
 
 ```
 USAGE:
-    StressTestISO8583Server <server> [OPTIONS]
-
-ARGUMENTS:
-    <server>    IP address or FQDN of the target server
+    StressTestISO8583Server [OPTIONS]
 
 OPTIONS:
     -h, --help                   Prints help information
     -v, --verbose                Set output to verbose messages
+    -s, --server                 IP address or FQDN of the target server (required)
     -p, --port        5005       Server port (default 5005)
     -t, --usetls                 Use TLS/SSL transport
     -b, --batch       10         Number of concurrent messages per batch
@@ -120,13 +118,13 @@ OPTIONS:
 
 ```bash
 # Basic — 100 batches × 10 messages = 1,000 messages to localhost
-dotnet run -- 127.0.0.1
+dotnet run -- -s 127.0.0.1
 
 # Full load test — 1,000 batches × 10 = 10,000 messages over TLS with verbose output
-dotnet run -- tekiumlabs.com -p 5005 -q 1000 -b 10 -t -v
+dotnet run -- -s tekiumlabs.com -p 5005 -q 1000 -b 10 -t -v
 
 # High concurrency — 50 batches × 100 concurrent = 5,000 messages
-dotnet run -- 192.168.1.50 -p 8080 -q 50 -b 100
+dotnet run -- -s 192.168.1.50 -p 8080 -q 50 -b 100
 ```
 
 > 💡 **Total messages sent = `quantity × batch`**. The `batch` controls how many concurrent connections are open at a time, and `quantity` is how many rounds of batches to send.
